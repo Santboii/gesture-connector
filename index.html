@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Detector - Real-time Hand & Face Recognition</title>
+    <meta name="description" content="Real-time gesture detection using MediaPipe for hand and face tracking">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">
+                <span class="gradient-text">Gesture Detector</span>
+            </h1>
+            <p class="subtitle">Real-time hand & face recognition powered by MediaPipe</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Video Feed Section -->
+            <div class="video-section">
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                    <div class="status-overlay" id="statusOverlay">
+                        <div class="status-badge">Initializing...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h2 class="panel-title">Detection Mode</h2>
+                    <div class="mode-toggles">
+                        <button class="mode-btn active" id="handModeBtn" data-mode="hands">
+                            <span class="mode-icon">👋</span>
+                            <span class="mode-label">Hand Gestures</span>
+                        </button>
+                        <button class="mode-btn" id="faceModeBtn" data-mode="face">
+                            <span class="mode-icon">😊</span>
+                            <span class="mode-label">Face Detection</span>
+                        </button>
+                        <button class="mode-btn" id="bothModeBtn" data-mode="both">
+                            <span class="mode-icon">🎯</span>
+                            <span class="mode-label">Both</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h2 class="panel-title">Detected Gestures</h2>
+                    <div class="gesture-display" id="gestureDisplay">
+                        <div class="no-gesture">No gestures detected</div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h2 class="panel-title">Supported Gestures</h2>
+                    <div class="gesture-list">
+                        <div class="gesture-item">👍 Thumbs Up</div>
+                        <div class="gesture-item">👎 Thumbs Down</div>
+                        <div class="gesture-item">✌️ Victory/Peace</div>
+                        <div class="gesture-item">✋ Open Palm</div>
+                        <div class="gesture-item">✊ Closed Fist</div>
+                        <div class="gesture-item">☝️ Pointing Up</div>
+                        <div class="gesture-item">🤟 ILoveYou</div>
+                        <div class="gesture-item">👌 OK Sign</div>
+                        <div class="gesture-item">🤘 Rock On</div>
+                        <div class="gesture-item">🤙 Call Me</div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h2 class="panel-title">Action Log</h2>
+                    <div class="action-log" id="actionLog">
+                        <div class="log-item">Waiting for gestures...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MediaPipe Scripts -->
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
