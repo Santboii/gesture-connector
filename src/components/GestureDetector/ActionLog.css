@@ -1,0 +1,55 @@
+.action-log {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-log::-webkit-scrollbar {
+    width: 6px;
+}
+
+.action-log::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.action-log::-webkit-scrollbar-thumb {
+    background: var(--accent-cyan);
+    border-radius: 3px;
+}
+
+.log-item {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    animation: fadeIn 0.3s ease;
+}
+
+.log-item.success {
+    border-left-color: var(--success);
+}
+
+.log-item.warning {
+    border-left-color: var(--warning);
+}
+
+.log-item.error {
+    border-left-color: var(--error);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

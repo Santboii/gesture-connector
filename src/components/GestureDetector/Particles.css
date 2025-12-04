@@ -1,0 +1,62 @@
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--accent-cyan);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 20s infinite ease-in-out;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.3;
+    }
+
+    50% {
+        transform: translateY(-100vh) translateX(50px);
+        opacity: 0.5;
+    }
+
+    90% {
+        opacity: 0.3;
+    }
+}
+
+/* Particle effect for gestures */
+.effect-particle {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    animation: particleEffect 1s ease-out forwards;
+}
+
+@keyframes particleEffect {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0);
+    }
+}

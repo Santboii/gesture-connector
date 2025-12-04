@@ -1,5 +1,5 @@
 // Import MediaPipe from local vendor directory
-import { GestureRecognizer, FaceLandmarker, FilesetResolver, DrawingUtils } from './vendor/vision_bundle.mjs';
+import { GestureRecognizer, FaceLandmarker, FilesetResolver, DrawingUtils } from '../public/vendor/vision_bundle.mjs';
 
 // Application State
 const state = {
@@ -36,7 +36,7 @@ async function init() {
 
         // Load MediaPipe vision tasks
         const vision = await FilesetResolver.forVisionTasks(
-            "./vendor/wasm"
+            "/vendor/wasm"
         );
 
         // Initialize Gesture Recognizer
@@ -254,6 +254,8 @@ async function processFaceDetection(nowInMs) {
 
 // Detect custom gestures based on hand landmarks
 function detectCustomGestures(landmarks) {
+    const DEBUG = true; // Set to true to enable console logging
+
     // Helper function to calculate distance between two points
     const distance = (p1, p2) => {
         const dx = p1.x - p2.x;
@@ -262,14 +264,33 @@ function detectCustomGestures(landmarks) {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     };
 
-    // Helper function to check if finger is extended (using distance from wrist)
+    // Helper function to calculate angle at a joint (in degrees)
+    const calculateAngle = (p1, p2, p3) => {
+        const v1 = { x: p1.x - p2.x, y: p1.y - p2.y, z: (p1.z || 0) - (p2.z || 0) };
+        const v2 = { x: p3.x - p2.x, y: p3.y - p2.y, z: (p3.z || 0) - (p2.z || 0) };
+
+        const dot = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+        const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+        const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
+
+        const cosAngle = dot / (mag1 * mag2);
+        return Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
+    };
+
+    // Improved finger extension detection using both distance and angle
     const isFingerExtended = (tipIdx, pipIdx, mcpIdx, wristIdx = 0) => {
+        // Method 1: Distance-based (original)
         const tipToWrist = distance(landmarks[tipIdx], landmarks[wristIdx]);
         const pipToWrist = distance(landmarks[pipIdx], landmarks[wristIdx]);
         const mcpToWrist = distance(landmarks[mcpIdx], landmarks[wristIdx]);
+        const distanceExtended = tipToWrist > pipToWrist && pipToWrist > mcpToWrist * 0.85;
 
-        // Finger is extended if tip is farther from wrist than pip and mcp
-        return tipToWrist > pipToWrist && pipToWrist > mcpToWrist * 0.9;
+        // Method 2: Angle-based (more reliable for different orientations)
+        const angle = calculateAngle(landmarks[tipIdx], landmarks[pipIdx], landmarks[mcpIdx]);
+        const angleExtended = angle > 140; // Finger is straight if angle > 140 degrees
+
+        // Finger is extended if either method confirms it
+        return distanceExtended || angleExtended;
     };
 
     // Landmark indices
@@ -280,13 +301,28 @@ function detectCustomGestures(landmarks) {
     const RING_TIP = 16, RING_PIP = 14, RING_MCP = 13;
     const PINKY_TIP = 20, PINKY_PIP = 18, PINKY_MCP = 17;
 
+    // Configurable thresholds
+    const OK_SIGN_THRESHOLD = 0.10; // Increased from 0.08 for more lenient detection
+    const THUMB_EXTENSION_THRESHOLD = 1.2; // Decreased from 1.3 for easier detection
+
     // OK Sign: Thumb tip touching index tip, other fingers extended
     const thumbIndexDist = distance(landmarks[THUMB_TIP], landmarks[INDEX_TIP]);
     const middleExtended = isFingerExtended(MIDDLE_TIP, MIDDLE_PIP, MIDDLE_MCP);
     const ringExtended = isFingerExtended(RING_TIP, RING_PIP, RING_MCP);
     const pinkyExtended = isFingerExtended(PINKY_TIP, PINKY_PIP, PINKY_MCP);
 
-    if (thumbIndexDist < 0.08 && middleExtended && ringExtended && pinkyExtended) {
+    if (DEBUG) {
+        console.log('OK Sign Check:', {
+            thumbIndexDist: thumbIndexDist.toFixed(3),
+            threshold: OK_SIGN_THRESHOLD,
+            middleExtended,
+            ringExtended,
+            pinkyExtended
+        });
+    }
+
+    if (thumbIndexDist < OK_SIGN_THRESHOLD && middleExtended && ringExtended && pinkyExtended) {
+        if (DEBUG) console.log('✅ OK Sign detected!');
         return 'OK_Sign';
     }
 
@@ -296,20 +332,45 @@ function detectCustomGestures(landmarks) {
     const ringFolded = !isFingerExtended(RING_TIP, RING_PIP, RING_MCP);
     const pinkyExt = isFingerExtended(PINKY_TIP, PINKY_PIP, PINKY_MCP);
 
+    if (DEBUG) {
+        console.log('Rock On Check:', {
+            indexExtended,
+            middleFolded,
+            ringFolded,
+            pinkyExtended: pinkyExt
+        });
+    }
+
     if (indexExtended && middleFolded && ringFolded && pinkyExt) {
+        if (DEBUG) console.log('✅ Rock On detected!');
         return 'Rock_On';
     }
 
     // Call Me (Shaka): Thumb and pinky extended, other fingers folded
     const thumbToWrist = distance(landmarks[THUMB_TIP], landmarks[WRIST]);
     const thumbCmcToWrist = distance(landmarks[THUMB_CMC], landmarks[WRIST]);
-    const thumbExtended = thumbToWrist > thumbCmcToWrist * 1.3; // Thumb extended away from hand
+    const thumbExtended = thumbToWrist > thumbCmcToWrist * THUMB_EXTENSION_THRESHOLD;
 
     const indexFolded = !isFingerExtended(INDEX_TIP, INDEX_PIP, INDEX_MCP);
     const middleFold = !isFingerExtended(MIDDLE_TIP, MIDDLE_PIP, MIDDLE_MCP);
     const ringFold = !isFingerExtended(RING_TIP, RING_PIP, RING_MCP);
 
+    if (DEBUG) {
+        console.log('Call Me Check:', {
+            thumbToWrist: thumbToWrist.toFixed(3),
+            thumbCmcToWrist: thumbCmcToWrist.toFixed(3),
+            ratio: (thumbToWrist / thumbCmcToWrist).toFixed(2),
+            threshold: THUMB_EXTENSION_THRESHOLD,
+            thumbExtended,
+            indexFolded,
+            middleFolded: middleFold,
+            ringFolded: ringFold,
+            pinkyExtended: pinkyExt
+        });
+    }
+
     if (thumbExtended && indexFolded && middleFold && ringFold && pinkyExt) {
+        if (DEBUG) console.log('✅ Call Me detected!');
         return 'Call_Me';
     }
 

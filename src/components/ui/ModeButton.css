@@ -1,0 +1,35 @@
+.mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-cyan);
+    transform: translateX(4px);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(181, 55, 255, 0.2));
+    border-color: var(--accent-cyan);
+    color: var(--text-primary);
+}
+
+.mode-icon {
+    font-size: 1.5rem;
+}
+
+.mode-label {
+    flex: 1;
+}
